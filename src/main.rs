@@ -1,14 +1,17 @@
 use std::{
     io::{Read, Write},
     net::TcpListener,
+    sync::{Arc, Mutex},
 };
 
 mod lexer;
 mod parser;
+mod store;
 mod token;
 
 use lexer::*;
 use parser::*;
+use store::*;
 use token::*;
 
 const CLRF: &str = "\r\n";
@@ -17,8 +20,12 @@ const CLRF: &str = "\r\n";
 async fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
 
+    let store = Arc::new(Mutex::new(Store::new()));
+
     for stream in listener.incoming() {
-        tokio::spawn(async {
+        let store = Arc::clone(&store);
+
+        tokio::spawn(async move {
             match stream {
                 Ok(mut _stream) => loop {
                     let mut request_buf = [0; 1024];
@@ -38,7 +45,7 @@ async fn main() {
 
                     let tokens = tokenize(request);
 
-                    let response = parse(&tokens);
+                    let response = parse(&tokens, Arc::clone(&store));
 
                     match _stream.write(response.as_bytes()) {
                         Ok(_) => (),
