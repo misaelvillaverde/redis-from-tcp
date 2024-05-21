@@ -1,4 +1,7 @@
-use std::{io::Write, net::TcpListener};
+use std::{
+    io::{Read, Write},
+    net::TcpListener,
+};
 
 const CLRF: &str = "\r\n";
 
@@ -7,14 +10,29 @@ fn main() {
 
     for stream in listener.incoming() {
         match stream {
-            Ok(mut _stream) => {
+            Ok(mut _stream) => loop {
+                let mut incoming = [0; 1024];
+
+                match _stream.read(&mut incoming) {
+                    Ok(n) => {
+                        if n <= 0 {
+                            break;
+                        }
+                    }
+                    Err(e) => {
+                        println!("error reading from stream: {}", e);
+                    }
+                }
+
                 let buffer = format!("+PONG{CLRF}");
 
                 match _stream.write(buffer.as_bytes()) {
                     Ok(_) => (),
-                    Err(e) => println!("error writing to stream: {}", e),
+                    Err(e) => {
+                        println!("error writing to stream: {}", e);
+                    }
                 }
-            }
+            },
             Err(e) => {
                 println!("error: {}", e);
             }
