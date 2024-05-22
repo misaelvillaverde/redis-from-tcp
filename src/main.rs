@@ -1,7 +1,7 @@
 use std::{
     io::{Read, Write},
     net::TcpListener,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 
 mod lexer;
@@ -20,7 +20,7 @@ const CLRF: &str = "\r\n";
 async fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
 
-    let store = Arc::new(Mutex::new(Store::new()));
+    let store = Arc::new(Store::new());
 
     for stream in listener.incoming() {
         let store = Arc::clone(&store);

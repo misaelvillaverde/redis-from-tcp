@@ -3,7 +3,8 @@ pub enum Token {
     ECHO,
     SET,
     GET,
-    String(String),
+    PX,
+    Literal(String),
 }
 
 impl Token {
@@ -12,7 +13,8 @@ impl Token {
             "echo" => Token::ECHO,
             "set" => Token::SET,
             "get" => Token::GET,
-            val => Token::String(val.to_string()),
+            "px" => Token::PX,
+            val => Token::Literal(val.to_string()),
         }
     }
 }
